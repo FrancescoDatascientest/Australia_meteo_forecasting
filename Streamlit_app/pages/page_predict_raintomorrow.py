@@ -1,4 +1,7 @@
 # -*- encoding: utf-8 -*-
+import pickle
+from json import dump
+
 import shap
 import streamlit as st
 
@@ -84,7 +87,59 @@ class MachineLearningModels:
 
         return fig_mean_shap, fig_beeswarm, fig_dependences
 
+    def predict(self, metric_name, s):
+        X_train, X_test, y_train, y_test = load(data_original)
+        label_encoder = LabelEncoder()
+        y_train_encoded = label_encoder.fit_transform(y_train)
+        y_test_encoded = label_encoder.transform(y_test)
 
+        file_best_model = f"{path_classification}/xgboost/best_model_{metric_name}.joblib"
+        xgb_best = load(file_best_model)
+
+        shap_explainer = shap.TreeExplainer(xgb_best)
+        shap_values = shap_explainer(X_test)
+        fig_waterfall = plt.figure(figsize=(6, 10))
+        shap.plots.waterfall(shap_values[s], max_display=10, show=False)
+
+        if s == 0:
+            title = f"RainTomorrow prédit = 0, RainTomorrow observé = 0"
+        elif s == 1:
+            title = f"RainTomorrow prédit = 1, RainTomorrow observé = 1"
+        else:
+            title = "Waterfall Plot"
+
+        plt.title(title, fontsize=20)
+        fig_waterfall.tight_layout()
+        is_raintomorrow = True if y_test_encoded[s] == 1 else False
+        print(is_raintomorrow)
+        return fig_waterfall, is_raintomorrow
+
+# ================================================================================================
+# Le bloc ci-dessous sert à générer les fichiers de résultats pour l'application
+# ================================================================================================
+# import pickle
+# metric_name = "roc_auc"
+# mlm = MachineLearningModels(path_data)
+#
+# fig_mean_shap, fig_beeswarm, fig_dependences = mlm.graph_mean_shap_xgboost(metric_name)
+# with open(f"{path_classification}/xgboost/mean_shap_{metric_name}.pickle", 'wb') as f:
+#     pickle.dump(fig_mean_shap, f)
+# with open(f"{path_classification}/xgboost/beeswarm_{metric_name}.pickle", 'wb') as f:
+#     pickle.dump(fig_beeswarm, f)
+# with open(f"{path_classification}/xgboost/dependence_{metric_name}.pickle", 'wb') as f:
+#     pickle.dump(fig_dependences, f)
+#
+# fig_warterfall, is_raintomorrow = mlm.predict(metric_name, s=0)
+# with open(f"{path_classification}/xgboost/prediction_{is_raintomorrow}_example_{metric_name}.pickle", 'wb') as f:
+#     pickle.dump(fig_warterfall, f)
+#
+# fig_warterfall, is_raintomorrow = mlm.predict(metric_name, s=1)
+# with open(f"{path_classification}/xgboost/prediction_{is_raintomorrow}_example_{metric_name}.pickle", 'wb') as f:
+#     pickle.dump(fig_warterfall, f)
+
+# ================================================================================================
+#
+# ================================================================================================
 sous_pages = ["***Approche de Machine Learning***",
               "***Approche de Deep Learning***"]
 
@@ -98,7 +153,28 @@ def set_sous_pages():
 
 class ApprocheMachineLearning:
     @staticmethod
-    def show_different_ML_models(metric_name):
+    def show_different_ML_models():
+        st.markdown(
+            '''
+            ## 1. Modèles classiques de classification du Machine Learning
+
+            - Modèles utilisés: **Logistic Regression**, **Decision Tree**, **Random Forest** et **XGBoost**.
+
+            - Données utilisés: toutes les observations après avoir traité les données manquantes par KNN imputation
+
+            - Hyperparamètres tunning: Les hyperparamètres de chaque modèle seront optimisés via des tests manuels,
+             des GridSearch, mais aussi à l’aide de la bibliothèque Hyperopt, en cherchant à maximiser diverses 
+             métriques telles que l’*accuracy*, la *précision*, le *recall*, le score *F1* et le *ROC AUC*.
+
+            '''
+        )
+
+        metric_name = st.selectbox(
+            "***Quelle métrique de classification que vous voulez optimiser?***",
+            list_metric_considered,
+            index=len(list_metric_considered) - 1
+        )
+
         mlm = MachineLearningModels(path_data)
         df_scores, file_rocauc_rain, file_rocauc_no_rain = mlm.get_results(metric_name)
 
@@ -109,98 +185,157 @@ class ApprocheMachineLearning:
         col1.dataframe(df_scores.style.highlight_max(axis=0))
         col2.image(file_rocauc_rain, width=500)
 
-    @staticmethod
-    def show_SHAP_XGBoost(metric_name):
-        st.markdown("### Interprétabilité du modèle XGBoost")
-
-        col1, col2, col3 = st.columns(3)
-
-        # file_mean_shap = f"{path_classification}/mean_SHAP_barplot.png"
-        # col1.image(file_mean_shap, width=300)
-        #
-        # file_beeswarm = f"{path_classification}/beeswarm.png"
-        # col2.image(file_beeswarm, width=300)
-        mlm = MachineLearningModels(path_data)
-        fig_mean_shap, fig_beeswarm, fig_dependences = mlm.graph_mean_shap_xgboost(metric_name)
-
-        col1.pyplot(fig_mean_shap)
-        col2.pyplot(fig_beeswarm)
-        col3.pyplot(fig_dependences)
 
     @staticmethod
     def show_XGBoost_different_levels():
         st.markdown(
             '''
-            ### Modèle XGBoost avec trois niveau de finesse
-            -	Un niveau macro, avec des modèles portant sur l’ensemble des données australiennes du jeu de données
-            -	Un niveau micro, où nous génèrerons des modèles spécifiques pour chaque Location
-            -	Un niveau intermédiaire, dans lequel nous aurons clusterisé l’Australie en plusieurs zones climatiques
+            ## 2. Modèle XGBoost avec trois niveau de finesse
             
-            Comparons maintenant les performances d’un XGBoost entraîné en optimisant l’AUC-ROC sur l’ensemble du jeu de 
-            données avec des modélisations ciblant chaque station météo d’une part (filtrage par la variable Location), 
-            et chaque zone climatique d’autre part (filtrage via la variable Climat issue de la clusterisation). 
+            -	Un niveau **macro**: la modélisation est réalisée en utilisant l’ensemble des données australiennes 
+            du jeu de données -> un seul modèle de prédiction pour tout l'Australie
+            -	Un niveau **micro**: pour chaque *Location*, la modélisation est réalisée en utilisant que les données
+            collectées à cette *Location* -> 49 modèles de prédiction
+            -	Un niveau **intermédiaire**: pour chaque zone climatique, la modélisation est réalisée en utilisant que 
+            les données collectées à cette cette zone -> 7 modèles de prédiction
+            
+            Comparons maintenant les performances d’un XGBoost entraîné en optimisant l’*AUC-ROC* aux trois niveaux 
+            en-dessus.
             
             '''
         )
+        fichier = f"{path_classification}/xgboost/Comparaison_XGBoost_3niveaux.xlsx"
+        df_comparaison = pd.read_excel(fichier)
+        st.dataframe(df_comparaison)
+
+        st.markdown(
+            '''
+            De façon plus détaillée, observons, dans la Figure 40, l’accuracy pour chacun des 49 lieux en comparant :
+            
+            -	Un modèle global, entraîné sur l’ensemble du dataset (« ML Global »)
+            -	Un modèle local, entraîné spécifiquement sur les données du lieu concerné (« ML Individuel »)
+            -	Un modèle naïf se contentant de prédire qu’il ne pleuvra jamais, qui nous permettra de relativiser les 
+            scores obtenus par les deux premiers modèles (« Pred Bas »)
+
+            '''
+        )
+        fichier = f"{path_classification}/xgboost/Accuracy_des_trois_modeles_par_Location.png"
+        st.image(fichier, caption=f"L'accuracy des trois modèles par Location", width=800)
 
     @staticmethod
-    def show_prediction_with_XGBoost(metric_name):
+    def show_SHAP_XGBoost():
+
         st.markdown(
             '''
-            ### Prédiction example avec XGBoost
+            ## 3. Interprétabilité et explicabilité du modèle XGBoost
+            Nous utilisons **SHAP**, une méthode d'interprétation mesurant l'impact des variables explicatives sur les
+            prédictions du modèle XGBoost.
+            
+            ### 3.1. L'interprétabilité avec SHAP
+            Nous allons maintenant montrer comment SHAP nous permet concrètement d’interpréter les résultats d’un
+            algorithme XGBoost.
+            '''
+        )
+        col1, col2, col3 = st.columns(3)
+
+        metric_name = "roc_auc"
+
+        with open(f"{path_classification}/xgboost/mean_shap_{metric_name}.pickle", 'rb') as f:
+            fig_mean_shap = pickle.load(f)
+        with open(f"{path_classification}/xgboost/beeswarm_{metric_name}.pickle", 'rb') as f:
+            fig_beeswarm = pickle.load(f)
+        with open(f"{path_classification}/xgboost/dependence_{metric_name}.pickle", 'rb') as f:
+            fig_dependences = pickle.load(f)
+
+        col1.pyplot(fig_mean_shap)
+        col2.pyplot(fig_beeswarm)
+        col3.pyplot(fig_dependences)
+
+        st.markdown(
+            '''
+            On constate que:
+            - Une augmentation de la valeur de *Humidity3pm* aujourd'hui indique une probabilité accrue de pluie pour 
+            demain.
+            - De même, des vents forts aujourd'hui sont associés à une probabilité plus élevée de pluie demain.
+            - En revanche, une pression atmosphérique élevée aujourd'hui est généralement corrélée à une diminution de 
+            la probabilité de pluie pour demain.
+            '''
+        )
+        st.markdown(
+            '''
+            ### 3.2 L'explicabilité avec SHAP
+            Dans les graphes ci-dessous, on peut voir l’impact de chacune des caractéristiques de l’observation choisie
+            et comment ces caractéristiques impactent la prédiction de la pluie du lentement. 
+            '''
+        )
+
+        with open(f"{path_classification}/xgboost/prediction_False_example_{metric_name}.pickle", 'rb') as f:
+            fig_false = pickle.load(f)
+        with open(f"{path_classification}/xgboost/prediction_True_example_{metric_name}.pickle", 'rb') as f:
+            fig_true = pickle.load(f)
+
+        col1, col2 = st.columns(2)
+        col1.pyplot(fig_false)
+        col2.pyplot(fig_true)
+
+
+    @staticmethod
+    def show_prediction_with_XGBoost():
+        st.markdown(
+            '''
+            ## 4. Prédiction example avec XGBoost
             
             '''
         )
 
+        st.markdown("Vous pouvez faire des prédiction avec vos propres données")
+        input_file = f"{path_classification}/xgboost/meteo_example.csv"
+        st.markdown(f"""[Example CSV input file]({input_file})""")
+
+        # Collects user input features into dataframe
+        uploaded_file = st.file_uploader("Charger votre input CSV file", type=["csv"])
+        if uploaded_file is not None:
+            input_df = pd.read_csv(uploaded_file)
+            st.dataframe(input_df)
+
+
     def show(self):
+        # Résultats des différents modèles de Machine Learning
+        self.show_different_ML_models()
+        # Résultats du modèle XGBoost aux 3 niveaux de finesse
+        self.show_XGBoost_different_levels()
+        # Interprétabilité du modèle XGBoost
+        self.show_SHAP_XGBoost()
+        # Prédiction example
+        self.show_prediction_with_XGBoost()
+
+
+class ApprocheDeepLearning:
+    @staticmethod
+    def show_couches_neuronnes():
         st.markdown(
             '''
-            ### Modèles classiques de classification du Machine Learning
-            Tout d'abord nous utilisons tous les observations du dataset issues du feature engineering que nous avons 
-            effectués dans les parties précédentes et appliquons des modèles de classification tels que
-            **Logistic Regression**, **Decision Tree**, **Random Forest** et **XGBoost**.
-    
-            Les hyperparamètres de chaque modèle seront optimisés via des tests manuels, des GridSearch, mais aussi à 
-            l’aide de la bibliothèque Hyperopt, en cherchant à maximiser diverses métriques telles que l’accuracy, la 
-            précision, le recall, le score F1 et le ROC AUC. Nous expliquerons les enjeux portant sur le choix d’une 
-            métrique adaptée.
-    
+            ### Nombre de couches et nombre de neurones
+            
+            Nous avons fait varier le nombre de couches et nombre de neurones par couche. Les modèles ont tous été 
+            entraînés avec un *learning_rate* de 0.001, un *batch_size* de 512, des fonctions d’activation *tanh* et 
+            sur 300 époques.
             '''
         )
+        fichier = f"{path_classification}/DNN/Comparaison_des_reseaux_de_neuronnes.xlsx"
+        df_comparaison = pd.read_excel(fichier)
+        st.dataframe(df_comparaison.style.highlight_max(axis=0))
 
-        metric = st.selectbox(
-            "***Quelle métrique de classification que vous voulez optimiser?***",
-            list_metric_considered,
-            index=None,
-            placeholder="Choisir une métrique ..."
-        )
-
-        if metric is not None:
-            # Résultats des différents modèles de Machine Learning
-            self.show_different_ML_models(metric)
-            # Résultats du modèle XGBoost aux 3 niveaux de finesse
-            self.show_XGBoost_different_levels()
-            # Interprétabilité du modèle XGBoost
-            self.show_SHAP_XGBoost(metric)
-            # Prédiction example
-            self.show_prediction_with_XGBoost(metric)
-
-
-def approche_deep_learning():
-    st.markdown(
-        '''
-        ### Modèle RNN
-        '''
-    )
+    def show(self):
+        self.show_couches_neuronnes()
 
 
 # La fonction principale qui est appellée dans streamlit_app.py pour afficher la page
 def app():
     sous_page = set_sous_pages()
-    st.write("Prédiction de Raintomorrow")
 
     if sous_page == sous_pages[0]:
         ApprocheMachineLearning().show()
 
     if sous_page == sous_pages[1]:
-        approche_deep_learning()
+        ApprocheDeepLearning().show()
