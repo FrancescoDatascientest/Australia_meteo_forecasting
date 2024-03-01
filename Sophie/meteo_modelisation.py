@@ -61,6 +61,7 @@ import plotly.colors as pc
 
 # divers
 from tqdm import tqdm
+import pickle
 
 # explicativité
 import shap
@@ -1375,6 +1376,9 @@ class ProjetAustralieModelisation:
       
     # modelise un DNN
     def modelisation_dnn(self, nom_modele:str="DNN", cible:str="RainTomorrow", gs:bool=True, climat:int=None, location:str="", totalite:bool=True, cut2016:bool=False):
+        
+        tf.keras.backend.clear_session()
+        
         # seules les variables débutant par Rain impliquent de la classification, sauf Rainfall
         est_classification = cible.startswith("Rain") and not cible.startswith("Rainfall")
                 
@@ -1417,6 +1421,8 @@ class ProjetAustralieModelisation:
 #        opt = Adam(lr=1e-1)
         
         modele.compile(loss='binary_crossentropy', metrics=['binary_accuracy'], optimizer=opt)
+#        modele.compile(loss='binary_crossentropy', metrics=[tf.keras.metrics.AUC()], optimizer=opt)
+#        modele.compile(loss='binary_crossentropy', metrics=[tf.keras.metrics.AUC(),'binary_accuracy'], optimizer=opt)
 
         # gere le desequilibre        
         from sklearn.utils import compute_class_weight
@@ -1432,8 +1438,9 @@ class ProjetAustralieModelisation:
         cb_liste=[lrate]
         #cb_liste = None
         
-        #history = modele.fit(self.X_train, self.y_train, epochs=1000, batch_size=128, validation_split=.2, class_weight=classWeight, verbose=2, callbacks=[tf.keras.callbacks.EarlyStopping(patience=50)])
-        history = modele.fit(self.X_train, self.y_train, epochs=1000, batch_size=128, validation_split=.2, class_weight=classWeight, verbose=2, callbacks=cb_liste)
+#        history = modele.fit(self.X_train, self.y_train, epochs=300, batch_size=128, validation_split=.2, class_weight=classWeight, verbose=2, callbacks=[tf.keras.callbacks.EarlyStopping(patience=50)])
+        history = modele.fit(self.X_train, self.y_train, epochs=300, batch_size=128, validation_split=.2, class_weight=classWeight, verbose=2, callbacks=cb_liste)
+#        history = modele.fit(self.X_train, self.y_train, epochs=10, batch_size=128, validation_data=(self.X_test, self.y_test), class_weight=classWeight, verbose=2, callbacks=cb_liste)
         
 #        history = modele.fit(self.X_train, self.y_train, epochs=50, batch_size=50, validation_split=.2, verbose=1, callbacks=[tf.keras.callbacks.EarlyStopping(patience=10)])
         
@@ -1469,11 +1476,24 @@ class ProjetAustralieModelisation:
     def resultats_dnn(self, climat:int=None, location:str="", cible:str="RainTomorrow"):
         
         nom_modele = self.titre_graphe("DNN", "", climat, location, cible)
+
+        ylim_max=.88
         
         plt.figure(figsize=(16, 6))
-        plt.plot(self.history.history['val_binary_accuracy'], "g", label="Accuracy (Val)")
-        plt.plot(self.history.history['binary_accuracy'], "b", label="Accuracy (Train)")
-        plt.ylim((.85,.88))
+        if 'val_binary_accuracy' in self.history.history.keys():
+            plt.plot(self.history.history['val_binary_accuracy'], "g", label="Accuracy (Val)")
+        if 'binary_accuracy' in self.history.history.keys():
+            plt.plot(self.history.history['binary_accuracy'], "b", label="Accuracy (Train)")
+        if 'val_auc' in self.history.history.keys():
+            plt.plot(self.history.history['val_auc'], "r", label="AUC (Val)")
+            ylim_max=.92
+        if 'auc' in self.history.history.keys():            
+            plt.plot(self.history.history['auc'], "y", label="AUC (Train)")
+
+
+
+#        plt.ylim((.85,.88))
+        plt.ylim((.85,ylim_max))
         plt.axhline(y=0.78, color='gray', linestyle='dashed')        
         plt.axhline(y=0.79, color='gray', linestyle='dashed')        
         plt.axhline(y=0.8, color='black', linestyle='dashed')        
@@ -1490,13 +1510,24 @@ class ProjetAustralieModelisation:
         plt.axhline(y=0.87, color='gray', linestyle='dashed')        
         plt.axhline(y=0.875, color='#CCC', linestyle='dashed')        
         plt.axhline(y=0.88, color='gray', linestyle='dashed')        
+        plt.axhline(y=0.885, color='#CCC', linestyle='dashed')        
         plt.axhline(y=0.89, color='gray', linestyle='dashed')        
+        plt.axhline(y=0.895, color='#CCC', linestyle='dashed')        
         plt.axhline(y=0.9, color='black', linestyle='dashed')        
+        plt.axhline(y=0.905, color='#CCC', linestyle='dashed')        
+        plt.axhline(y=0.91, color='gray', linestyle='dashed')        
+        plt.axhline(y=0.815, color='#CCC', linestyle='dashed')        
+        plt.axhline(y=0.92, color='gray', linestyle='dashed')        
 
         plt.legend()
         plt.xlabel("Epochs")
         plt.ylabel("Accuracy")
-        plt.title(f"Historique d'Accuracy \n{nom_modele}")
+        plt.title(f"Historique de métriques \n{nom_modele}")
+        
+        # Enregistrer l'objet figure dans un fichier
+        with open('dnn_metrics.pkl', 'wb') as f:
+            pickle.dump(plt.gcf(), f)        
+        
         plt.show();
         
         self.test_pred = self.modele.predict(self.X_test)
@@ -1522,6 +1553,11 @@ class ProjetAustralieModelisation:
         plt.xlabel("Epochs")
         plt.ylabel("Loss")
         plt.title(f"Evolution de la fonction de perte \n{nom_modele}")
+
+        # Enregistrer l'objet figure dans un fichier
+        with open('dnn_loss.pkl', 'wb') as f:
+            pickle.dump(plt.gcf(), f)        
+
         plt.show();
         
         
