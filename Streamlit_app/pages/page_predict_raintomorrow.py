@@ -312,22 +312,49 @@ class ApprocheMachineLearning:
 
 class ApprocheDeepLearning:
     @staticmethod
-    def show_couches_neuronnes():
+    def show_parametres_tunning():
         st.markdown(
             '''
-            ### Nombre de couches et nombre de neurones
+            Nous utilisons un réseau de neuronnes profond (Deep Neural Network) pour la prédiction de la variable 
+            *RainTomorrow*.
             
-            Nous avons fait varier le nombre de couches et nombre de neurones par couche. Les modèles ont tous été 
-            entraînés avec un *learning_rate* de 0.001, un *batch_size* de 512, des fonctions d’activation *tanh* et 
-            sur 300 époques.
+            ### Détermination de la structure du modèle DNN
+            
+            Pour structurer notre modèle DNN, nous avons exploré différentes configurations en ajustant le nombre de 
+            couches et de neurones, ainsi que le taux d'apprentissage et les fonctions d'activation. Les tests ont 
+            révélé que l'utilisation de couches cachées avec un nombre de neurones varié impacte significativement les 
+            performances du modèle. L'ajustement du taux d'apprentissage via une callback a permis d'optimiser la 
+            convergence du modèle, tandis que l'expérimentation avec différentes fonctions d'activation a montré des 
+            effets sur la dispersion de l'apprentissage.
+
+            En conclusion, nous opterons pour un réseau comportant une première couche de 50 neurones activés par *Tanh*,
+            suivie d'une seconde couche de 50 neurones activés par *ReLU*.
+            
+            ### Entraînement du modèle
+            
+            L'entraînement du modèle nécessite une approche empirique étant donné l'absence de moyen analytique pour 
+            déterminer les hyperparamètres optimaux tels que le nombre d'epochs, l'optimizer ou la taille de batch. 
+            Nous avons exploré différentes configurations en faisant varier un hyperparamètre à la fois, constatant que 
+            le modèle avec un batch_size de 16 était le plus performant mais aussi le plus lent. Malgré une légère 
+            baisse de la loss à chaque changement de learning rate, nous préférons opter pour un batch_size de 128 en
+            raison de son temps d'entraînement plus raisonnable et de l'écart moindre entre les échantillons de train 
+            et de test.
+            
+            Nous examinons les courbes d'apprentissage de notre meilleur modèle DNN, caractérisé par 
+            - une première couche cachée de 50 neurones avec activation tanh, 
+            - une seconde couche cachée de 50 neurones avec activation ReLU, 
+            - un entraînement sur 300 époques.
+            - un learning rate dynamique via une callback personnalisée, 
+            - un batch size de 128, 
             '''
         )
-        fichier = f"{path_classification}/DNN/Comparaison_des_reseaux_de_neuronnes.xlsx"
+        fichier = f"{path_classification}/Comparaison_XGBoost_DNN.xlsx"
         df_comparaison = pd.read_excel(fichier)
-        st.dataframe(df_comparaison.style.highlight_max(axis=0))
+        df_comparaison = df_comparaison.style.highlight_max(subset=df_comparaison.columns[1:], axis=0)
+        st.dataframe(df_comparaison)
 
     def show(self):
-        self.show_couches_neuronnes()
+        self.show_parametres_tunning()
 
 
 # La fonction principale qui est appellée dans streamlit_app.py pour afficher la page
