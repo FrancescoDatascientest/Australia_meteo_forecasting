@@ -1,7 +1,7 @@
 import streamlit as st
 
 from pages import page_introduction, page_conclusion, page_jeu_de_donnees, page_predict_raintomorrow, \
-    page_predict_rain_long_horizon, page_predict_maxtemps, page_preprocessing_feature_engineering, \
+    page_predict_rain_long_horizon, page_predict_maxtemp, page_preprocessing_feature_engineering, \
     page_missing_values, page_new_features
 
 from backend.streamlit_backend_sb import ProjetAustralieSoutenance
@@ -64,10 +64,10 @@ elif page == pages[5]:
     page_predict_raintomorrow.app()
 
 elif page == pages[6]:
-    page_predict_rain_long_horizon.app()
+    page_predict_rain_long_horizon.app(pas)
 
 elif page == pages[7]:
-    page_predict_maxtemps.app()
+    page_predict_maxtemp.app(pas)
 
 elif page == pages[8]:
     page_conclusion.app()

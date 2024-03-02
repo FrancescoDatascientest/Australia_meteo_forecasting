@@ -476,3 +476,88 @@ class ProjetAustralieSoutenance:
         df_temp[nom_colonne_dir+"_RAD"]=df_temp["rad"]  # on garde rad pour les graphes
         
         self.df = df_temp.drop(columns=["cos", "sin", "rad", "dir", nom_colonne_dir])
+
+    # horizion de temps
+    # affiche la pvalue pour chaque zone climatique
+    def affiche_pvalue_rainj_climats(self):
+        if not hasattr(self, "resultats_rainj_climat"):
+            self.resultats_rainj_climat = pd.read_csv("data/resultats_rainj_climats.csv")
+        
+        figure, ax = plt.subplots(self.resultats_rainj_climat.Climat.nunique(), 1, figsize=(22,17))
+        plt.subplots_adjust(hspace=.4)
+        
+        xtick = [*range(1,8), *range(8,365,7)]
+        num_ax=0
+        for i in np.sort(self.resultats_rainj_climat.Climat.unique()):
+            
+            ax[num_ax].plot(self.resultats_rainj_climat[self.resultats_rainj_climat.Climat==i].J.values, self.resultats_rainj_climat[self.resultats_rainj_climat.Climat==i].pvalue05.values, label="p-value d'après prédictions selon seuil par défaut (0,5)")
+            ax[num_ax].plot(self.resultats_rainj_climat[self.resultats_rainj_climat.Climat==i].J.values, self.resultats_rainj_climat[self.resultats_rainj_climat.Climat==i].pvaluebest.values, label="p-value d'après prédictions selon seuil optimal")
+            ax[num_ax].set_title(f"pvalues pour climat {i} ({self.lib_climats[i]})", fontweight='bold')
+            ax[num_ax].axhline(.05, color = 'r', linestyle = '--')
+            ax[num_ax].set_xticks(xtick)
+            ax[num_ax].legend(loc="upper right")
+
+            num_ax+=1
+        
+    # affiche les variables de performances pour toute l'australie
+    def affiche_perfs_rainj_macro(self, nbj=365):
+        self.resultats_rainj_macro = pd.read_csv("data/resultats_rainj_macro.csv")
+        
+        figure = plt.figure(figsize=(8,4))
+        xtick = [*range(1,16), *range(16,nbj,7)]
+
+        masque = (self.resultats_rainj_macro.seuil>.1) & (self.resultats_rainj_macro.J<=nbj)
+
+        plt.plot(self.resultats_rainj_macro[masque].J.values, self.resultats_rainj_macro[masque].AccuracyTrain.values, label="Accuracy (train)")
+        plt.plot(self.resultats_rainj_macro[masque].J.values, self.resultats_rainj_macro[masque].AccuracyTest.values, label="Accuracy (test)")
+        plt.plot(self.resultats_rainj_macro[masque].J.values, self.resultats_rainj_macro[masque].RecallTest.values, label="Recall (test)")
+        plt.plot(self.resultats_rainj_macro[masque].J.values, self.resultats_rainj_macro[masque].AUC.values, label="AUC")
+        plt.title("Variables de Performances pour toute l'Australie\n(seuil optimal)")
+        plt.axhline(.9, color = '#666', linestyle = '--')
+        plt.axhline(.8, color = '#666', linestyle = '--')
+        plt.axhline(.7, color = '#666', linestyle = '--')
+        plt.axhline(.6, color = '#666', linestyle = '--')
+        #ax[num_ax].axhline(.55, color = '#666', linestyle = '--')
+        plt.axhline(.5, color = '#666', linestyle = '--')
+        plt.xticks(xtick)
+        plt.xlabel("Nb de journées de prédiction de la pluie dans le futur")
+        plt.ylabel("Score")
+      
+        plt.legend(loc="upper right")
+        
+        plt.ylim(0,1)
+
+    # -----------------
+    # pour chaque zone climatique: affiche l'AUC pour nbj pour chaque zone climatique
+    # -----------------
+    def AUC_par_climat(self, nbj:int=8):
+        if not hasattr(self, "resultats_rainj_climat"):
+            self.resultats_rainj_climat = pd.read_csv("data/resultats_rainj_climats.csv")
+        
+        all_scores_auc=[]
+        climats=[]
+        for climat in np.sort(self.data.Climat.unique()):
+            all_scores_auc.append(self.resultats_rainj_climat.loc[(self.resultats_rainj_climat.Climat==climat) & (self.resultats_rainj_climat.J<=nbj)].AUC)
+            climats.append(climat)
+            
+        self.AUC_trace(all_scores_auc, climats, nbj=nbj)
+
+    # trace l'évolution de l'AUC avec les résultats des modèles entrainés précédemment
+    def AUC_trace(self, scores_auc, types=None, mode:str="Climat", nbj:int=8):
+        fig = plt.figure(figsize=(12,4))
+        
+        if mode=="Climat":
+            for score_auc, item_type in zip(scores_auc, types):
+                plt.plot(range(1,nbj+1), np.array(score_auc), label=f"Climat {item_type} ({self.lib_climats[item_type]})", color=self.palette[item_type])
+        elif mode=="Location":
+            for score_auc, item_type in zip(scores_auc, types):
+                plt.plot(range(1,nbj+1), score_auc, label=f"{item_type}")
+        else:
+            plt.plot(range(1,nbj+1), scores_auc, label="Global")
+            
+        plt.ylabel("AUC")
+        plt.xlabel("Numéro de la journée à J+n prédite pour RainToday")
+        plt.title(f"Score AUC en fonction du décalage de prédiction de pluie dans le futur\npériode de {nbj} jours")
+        plt.legend(loc='upper right')
+        plt.ylim(.45,1)
+        plt.axhline(y=0.5, color='gray', linestyle='dashed')

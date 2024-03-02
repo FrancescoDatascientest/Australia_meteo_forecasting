@@ -658,7 +658,7 @@ class ProjetAustralieModelisation:
         if not hasattr(self, "resultats_rainj_location"):
             self.resultats_rainj_macro = pd.DataFrame(columns=["J", "seuil", "pvalue05", "pvaluebest", "AUC", "AccuracyTrain", "AccuracyTest", "RecallTest"])
         
-        for i in range(1,365):
+        for i in range(1,15):
             self.modelisation(cible=f"Rain_J_{i:02d}", gs=True)
             pv_05, pv_best = self.verification_significativite_modele()
             self.resultats_rainj_macro.loc[len(self.resultats_rainj_macro)] = [i, 1, pv_05, pv_best, self.res_roc_auc, self.res_acc_train_seuil, self.res_acc_test_seuil, self.res_recall_test_seuil]
@@ -1671,6 +1671,10 @@ class ProjetAustralieModelisation:
             
         return f'Modèle {nom_modele} \n {hp}{titre_clim_loc} \n Variable cible:{cible}'
 
+
+    # -----------------
+    # entraine autant de modeles que nécessaires pour prévoir prédire la variable cible sur nbj jours
+    # -----------------
     def AUC_nb_J(self, nom_modele:str="XGBoost", cible:str="RainTomorrow", gs:bool=False, climat:int=None, location:str="", nbj:int=8):
         scores_auc=[]
         
@@ -1687,12 +1691,17 @@ class ProjetAustralieModelisation:
         #self.scores_auc=scores_auc
         return scores_auc        
 
-
+    # -----------------
+    # à l'echelle macro: entraine autant de modeles que nécessaires pour prévoir prédire la variable cible sur nbj jours    
+    # -----------------
     def AUC_macro(self, nom_modele:str="XGBoost", cible:str="Rain", gs:bool=False, nbj:int=8):
         all_scores_auc=self.AUC_nb_J(nom_modele, cible, gs=gs, nbj=nbj)
             
         self.AUC_trace(all_scores_auc, mode="macro", nbj=nbj)
 
+    # -----------------
+    # pour chaque zone climatique: entraine autant de modeles que nécessaires pour prévoir prédire la variable cible sur nbj jours    
+    # -----------------
     def AUC_par_climat(self, nom_modele:str="XGBoost", cible:str="Rain", gs:bool=False, nbj:int=8):
         all_scores_auc=[]
         climats=[]
@@ -1702,6 +1711,9 @@ class ProjetAustralieModelisation:
             
         self.AUC_trace(all_scores_auc, climats, nbj=nbj)
 
+    # -----------------
+    # pour toutes les locations d'une zone climatique ou toute l'australie: entraine autant de modeles que nécessaires pour prévoir prédire la variable cible sur nbj jours    
+    # -----------------
     def AUC_par_location(self, nom_modele:str="XGBoost", cible:str="Rain", gs:bool=False, climat:int="", nbj:int=8):
         all_scores_auc=[]
         locations=[]       
@@ -1720,6 +1732,7 @@ class ProjetAustralieModelisation:
         self.AUC_trace(all_scores_auc, locations, mode="Location", nbj=nbj)
 
         
+    # trace l'évolution de l'AUC avec les résultats des modèles entrainés précédemment
     def AUC_trace(self, scores_auc, types=None, mode:str="Climat", nbj:int=8):
         fig = plt.figure(figsize=(12,8))
         
@@ -2002,14 +2015,15 @@ class ProjetAustralieModelisation:
         fig.update_layout(mapbox_style='open-street-map')
         fig.show(renderer='browser')      
 
-#source = pd.read_csv("data_process4_knnim_resample_J365.csv", index_col=0)
-#source = pd.read_csv("data_process3_knnim_resample_J2.csv", index_col=0)
+#source = pd.read_csv("data_process4_knnim_resample_J365.zip", index_col=0)
+#source = pd.read_csv("data_process5_knnim_resample_J2.csv", index_col=0)
 
-source = pd.read_csv("data_process5_knnim_resample_J2.csv", index_col=0)
+
+#source = pd.read_csv("data_process3_knnim_resample_J2.csv", index_col=0)
 #source = pd.read_csv("data_basique_location.csv", index_col=0)
 
 #pm = ProjetAustralieModelisation(pd.read_csv("data_basique.csv", index_col=0))
-pm = ProjetAustralieModelisation(source)
+#pm = ProjetAustralieModelisation(source)
 
 #pm.modelisation_dnn()
 

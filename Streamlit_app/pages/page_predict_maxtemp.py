@@ -1,9 +1,9 @@
 # -*- encoding: utf-8 -*-
 
 import streamlit as st
+import matplotlib.pyplot as plt
 
-
-def app():
+def app(pas):
     st.subheader("Décomposition")
     
     st.image('img/maxtemp_decomposition.png', use_column_width=True)
