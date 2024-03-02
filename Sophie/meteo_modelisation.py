@@ -1404,7 +1404,7 @@ class ProjetAustralieModelisation:
         else:
             rmse = np.sqrt(mean_squared_error(self.y_test, predictions))
             mae = mean_absolute_error(self.y_test, predictions)
-            print (f"\n ----- \n RMSE : {rmse:.2f} - MAE : {mae:.2f}\n ----- \n\n")
+            print (f"\n ----- \n RMSE : {rmse:.4f} - MAE : {mae:.4f}\n ----- \n\n")
 
         i_fin_completes=time.time()
         print (" Temps comp: {:.2f} minutes".format( (i_fin_completes-i_fin_test)/60))
