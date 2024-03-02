@@ -775,6 +775,10 @@ class ProjetAustralieModelisation:
         if libelle!="":
            lib +=" pour "+libelle+" ("+self.cible+")"
         plt.xlabel(lib)
+        
+        with open('fi_'+libelle+'_'+self.cible+'.pkl', 'wb') as f:
+            pickle.dump(plt.gcf(), f)        
+        
         plt.show();
         
     # entraine toutes les zones climatiques

@@ -2,10 +2,26 @@
 
 import streamlit as st
 import matplotlib.pyplot as plt
+import pickle
 
 def app(pas):
     st.subheader("Préambule : importance du seuil de probabilité")
-    st.subheader("Ajout de variables cibles : 'RainToday' avec shift de n jours")
+    
+    col1, col2 = st.columns(2)
+
+    with open('img/auc_australie.pkl', 'rb') as f:
+        reloaded_figure = pickle.load(f)
+    col1.pyplot(reloaded_figure)
+    
+    with open('img/auc_uluru.pkl', 'rb') as f:
+        reloaded_figure = pickle.load(f)
+    col2.pyplot(reloaded_figure)
+    
+
+    st.subheader("Principe")
+    
+    st.write("- Ajout de variables cibles : 'RainToday' avec shift de n jours")
+    st.write("- Entrainement d'un XGBoost par décalage de prévision de la pluie")
 
     st.subheader("Métriques des prévisions sur 15 jours")
     #st.image('img/horizon_perfs.png', use_column_width=True)
@@ -24,9 +40,30 @@ def app(pas):
     pas.affiche_pvalue_rainj_climats()
     st.pyplot(plt.gcf())
     
-    st.subheader("Prévisions sur une année")      
-    st.image('img/horizon_pred_darwin.png', use_column_width=True)
+    st.subheader("Prévisions sur une année, uniquement à partir des données du 4 janvier 2016")
+    #st.image('img/horizon_pred_darwin.png', use_column_width=True)
+
+    with open('img/horz2016_Darwin_climat.pkl', 'rb') as f:
+        reloaded_figure = pickle.load(f)
+    st.pyplot(reloaded_figure)
+
+    with open('img/horz2016_Adelaide_micro.pkl', 'rb') as f:
+        reloaded_figure = pickle.load(f)
+    st.pyplot(reloaded_figure)
     
-    st.subheader("Explicabilité")   
-    st.image('img/horizon_explicabilite.png', use_column_width=True)
+    st.subheader("Interprétabilité")   
+    # st.image('img/horizon_explicabilite.png', use_column_width=True)
+    
+    col1, col2, col3 = st.columns(3)
+    with open('img/fi_Australie_Rain_J_15.pkl', 'rb') as f:
+        reloaded_figure = pickle.load(f)
+    col1.pyplot(reloaded_figure)
+    
+    with open('img/fi_Darwin_Rain_J_15.pkl', 'rb') as f:
+        reloaded_figure = pickle.load(f)
+    col2.pyplot(reloaded_figure)
+
+    with open('img/fi_Darwin_Rain_J_100.pkl', 'rb') as f:
+        reloaded_figure = pickle.load(f)
+    col3.pyplot(reloaded_figure)
     

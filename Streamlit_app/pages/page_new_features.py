@@ -6,10 +6,10 @@ import matplotlib.pyplot as plt
 
 def app(pas):
     
-    st.header("Clusterisation par zones climatiques")
+    st.subheader("Clusterisation par zones climatiques")
     affichage_clusterisation(pas)
 
-    st.header("Nouvelles variables")
+    st.subheader("Nouvelles variables")
 
     st.write("- Zone climatique")
     st.write("- Latitude et longitude de chaque Location")
@@ -17,9 +17,9 @@ def app(pas):
     st.write("- Approche trigonométrique du jour de l'année (=cos(2 pi * numéro/365), et idem avec 4 pi)")
     st.write("- Approche trigonométrique de la direction du vent (cos et sin)")
 
-    st.header("Corrélations nouvelles variables")
-    pas.matrice_corr_quyen(pas.data)
-    st.pyplot(plt.gcf())  
+    #st.header("Corrélations nouvelles variables")
+    #pas.matrice_corr_quyen(pas.data)
+    #st.pyplot(plt.gcf())  
     
     
 def affichage_clusterisation(pas):

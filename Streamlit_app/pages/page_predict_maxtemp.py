@@ -18,3 +18,5 @@ def app(pas):
 
     st.image('img/maxtemp_multi_loss.png', use_column_width=True)
     st.image('img/maxtemp_multi_pred.png', use_column_width=True)
+
+    st.image('img/maxtemp_multi_comp.png', use_column_width=True)
