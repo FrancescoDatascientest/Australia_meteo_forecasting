@@ -5,18 +5,6 @@ import matplotlib.pyplot as plt
 import pickle
 
 def app(pas):
-    st.subheader("Préambule : importance du seuil de probabilité")
-    
-    col1, col2 = st.columns(2)
-
-    with open('img/auc_australie.pkl', 'rb') as f:
-        reloaded_figure = pickle.load(f)
-    col1.pyplot(reloaded_figure)
-    
-    with open('img/auc_uluru.pkl', 'rb') as f:
-        reloaded_figure = pickle.load(f)
-    col2.pyplot(reloaded_figure)
-    
 
     st.subheader("Principe")
     
@@ -37,8 +25,22 @@ def app(pas):
     
     st.subheader("Test X² par zone climatique")   
     #st.image('img/horizon_pvalue_climat.png', use_column_width=True)
-    pas.affiche_pvalue_rainj_climats()
-    st.pyplot(plt.gcf())
+    show_plot = st.checkbox("Afficher les tests X²")
+    if show_plot:
+        pas.affiche_pvalue_rainj_climats()
+        st.pyplot(plt.gcf())
+
+    st.subheader("Seuil de probabilité optimal")
+    
+    col1, col2 = st.columns(2)
+
+    with open('img/auc_australie.pkl', 'rb') as f:
+        reloaded_figure = pickle.load(f)
+    col1.pyplot(reloaded_figure)
+    
+    with open('img/auc_uluru.pkl', 'rb') as f:
+        reloaded_figure = pickle.load(f)
+    col2.pyplot(reloaded_figure)
     
     st.subheader("Prévisions sur une année, uniquement à partir des données du 4 janvier 2016")
     #st.image('img/horizon_pred_darwin.png', use_column_width=True)
@@ -54,16 +56,16 @@ def app(pas):
     st.subheader("Interprétabilité")   
     # st.image('img/horizon_explicabilite.png', use_column_width=True)
     
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     with open('img/fi_Australie_Rain_J_15.pkl', 'rb') as f:
         reloaded_figure = pickle.load(f)
     col1.pyplot(reloaded_figure)
     
-    with open('img/fi_Darwin_Rain_J_15.pkl', 'rb') as f:
-        reloaded_figure = pickle.load(f)
-    col2.pyplot(reloaded_figure)
+    #with open('img/fi_Darwin_Rain_J_15.pkl', 'rb') as f:
+    #    reloaded_figure = pickle.load(f)
+    #col2.pyplot(reloaded_figure)
 
     with open('img/fi_Darwin_Rain_J_100.pkl', 'rb') as f:
         reloaded_figure = pickle.load(f)
-    col3.pyplot(reloaded_figure)
+    col2.pyplot(reloaded_figure)
     

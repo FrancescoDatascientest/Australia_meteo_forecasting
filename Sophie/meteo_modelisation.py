@@ -121,7 +121,7 @@ class ProjetAustralieModelisation:
     # ---------
     # ---------
     
-    def _modelisation_preparation(self, cible:str, scale:bool, climat:int=None, location:str="", cut2016:bool=False):
+    def _modelisation_preparation(self, cible:str, scale:bool, climat:int=None, location:str="", cut2016:bool=False, cut2013:bool=False):
         
         # filtrage eventuel
         data=self.data
@@ -192,6 +192,13 @@ class ProjetAustralieModelisation:
             self.y=self.y[self.y.index<'2016-01-01']
             self.Xy = self.Xy[self.Xy.index<'2016-01-01']
 
+        # si cut2013 est a true, alors on va retirer les données anterieures au 1er mars 2013, à cause des trous
+        # utile pour les apprentissages en serie temporelle
+        if cut2013:
+            self.X = self.X[self.X.index>='2013-03-01']
+            self.y=self.y[self.y.index>='2013-03-01']
+            self.Xy = self.Xy[self.Xy.index>='2013-03-01']
+
         est_classification = cible.startswith("Rain") and not cible.startswith("Rainfall")
         if est_classification:
             X_train, X_test, y_train, y_test = train_test_split(self.X, self.y, test_size=0.2, random_state=66, stratify=self.y) 
@@ -248,7 +255,7 @@ class ProjetAustralieModelisation:
         self.rnn_batch_size = 1
         
         # la cible n'a en realite pas d'importance ici
-        self._modelisation_preparation(cible=cible, scale=False, location=location)
+        self._modelisation_preparation(cible=cible, scale=False, location=location, cut2013=False)
         
         self.XyOrig = self.Xy[cible]
         
@@ -388,8 +395,8 @@ class ProjetAustralieModelisation:
         #modele.compile(loss='binary_crossentropy', metrics=['binary_accuracy'], optimizer=opt)
 
         #history = modele.fit(self.X_train, self.y_train, epochs=10, batch_size=128, validation_split=.2, verbose=1)
-#        history = modele.fit_generator(generator=self.rnn_train_generator, epochs=80, verbose=1, validation_data=self.rnn_validation_generator)
-        history = modele.fit_generator(generator=self.rnn_train_generator, epochs=30, verbose=1, validation_data=self.rnn_validation_generator)
+        history = modele.fit_generator(generator=self.rnn_train_generator, epochs=80, verbose=1, validation_data=self.rnn_validation_generator)
+#        history = modele.fit_generator(generator=self.rnn_train_generator, epochs=30, verbose=1, validation_data=self.rnn_validation_generator)
 
         self.modele=modele
         self.history=history
@@ -553,6 +560,19 @@ class ProjetAustralieModelisation:
         self.validation_orig_unscaled = pd.DataFrame(self.scaler_rnn.inverse_transform(validation_orig_unscaled), columns=self.Xy.columns)[cible]
         self.validation_orig_unscaled.index = self.Xy[self.indice_coupure_1+self.rnn_sequence_longueur:self.indice_coupure_2].index
 
+        # enregistre resultats
+        df_resultats = pd.DataFrame({
+            'train_orig_unscaled': self.train_orig_unscaled,
+            'train_pred_unscaled': self.train_pred_unscaled,
+            'validation_orig_unscaled': self.validation_orig_unscaled,
+            'validation_pred_unscaled': self.validation_pred_unscaled           
+            })
+        
+        str_multivariee="mono"
+        if multivariee:
+            str_multivariee="multi"
+        df_resultats.to_csv("rnn_resultats_"+location+"_"+str_multivariee+".csv")
+
         plt.figure(figsize=(50, 6))
 #        plt.figure(figsize=(30, 6))
         plt.plot(self.train_orig_unscaled, label="Train Orig", alpha=.75)
@@ -639,11 +659,22 @@ class ProjetAustralieModelisation:
         reel_unscaled = pd.DataFrame(self.scaler_rnn.inverse_transform(reel_xtend), columns=self.Xy.columns)[cible]
         reel_unscaled.index = self.Xy[self.indice_coupure_2+self.rnn_sequence_longueur:self.indice_coupure_2+self.rnn_sequence_longueur+nb_prev+1].index
         
-        plt.figure(figsize=(16, 6))
+        # enregistre resultats
+        df_resultats = pd.DataFrame({
+            'pred_unscaled': pred_unscaled,
+            'reel_unscaled': reel_unscaled,
+            })       
+        df_resultats.to_csv(f"rnn_pred2016_{self.rnn_sequence_longueur}.csv")
+
+        plt.figure(figsize=(16, 4))
         plt.plot(pred_unscaled, label="Predictions incrémentales")
         plt.plot(reel_unscaled, label="Donnees reelles")
         plt.legend()
-        plt.title("Prediction des températures sur période non vue à l'entraînement")
+        plt.title("Prediction itérative des températures sur période non vue à l'entraînement")
+        
+        with open(f'rnn_iterative.pkl', 'wb') as f:
+            pickle.dump(plt.gcf(), f)        
+        
         plt.show();
         
         print ("RMSE test: ",np.sqrt(mean_squared_error(reel_unscaled, pred_unscaled)))

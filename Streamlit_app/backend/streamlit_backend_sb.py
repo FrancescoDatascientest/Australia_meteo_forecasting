@@ -19,6 +19,9 @@ import plotly.colors as pc
 # scaler
 from sklearn.preprocessing import MinMaxScaler
 
+# timeseries
+from statsmodels.tsa.seasonal import seasonal_decompose
+
 path_datasets="data/"
 
 class ProjetAustralieSoutenance:
@@ -561,3 +564,26 @@ class ProjetAustralieSoutenance:
         plt.legend(loc='upper right')
         plt.ylim(.45,1)
         plt.axhline(y=0.5, color='gray', linestyle='dashed')
+
+
+    # ---- series temporelles
+    def prepare_serie_temporelle(self, location:str="", variable:str="MaxTemp", affiche=False):
+        df = self.data
+        if location!="":
+            df = self.data.loc[self.data.Location==location]
+
+        # on ne reprend pas plus tôt à cause des trous sur 3 mois
+        df = df.loc[df.index>='2013-03-03']
+        #df = df.loc[df.index>='2009-01-01']
+
+        self.serie_temporelle=df[variable]
+        self.titre_analyse = location+str(" - ")+variable
+        
+        if affiche:
+            plt.figure(figsize=(16,8))
+            plt.plot(self.serie_temporelle)
+            plt.title(self.titre_analyse)
+            
+        fig = seasonal_decompose(self.serie_temporelle, model='additive', period=365).plot()
+        
+        
