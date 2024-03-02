@@ -805,7 +805,7 @@ class ProjetAustralieModelisation:
                 self.modelisation(cible=f"Rain_J_{i+1:02d}", gs=True, cut2016=True)            
 
             X0 = self.X_2016[self.X_2016_Location == location][j_decalage]
-            y0 = self.y_2016[self.X_2016_Location == location][j_decalage]
+            y0 = self.y_2016[self.X_2016_Location == location].iloc[j_decalage]
             liste_y.append(y0)
 
             y_pred_proba = self.modele.predict_proba(pd.DataFrame(X0).T)[:,1][0] # on predit chaque fois à partir de la meme date
@@ -851,9 +851,11 @@ class ProjetAustralieModelisation:
         #plt.axhline(self.res_roc_best_seuil, color = '#AAA', linestyle = '--')
         plt.legend()
         plt.title(f"{location}, climat {climat} ({self.lib_climats[climat]}) - p-value X²: {x2_seuil:.3f} - Taux de jours de pluies : {(np.sum(liste_y)/len(liste_y)):.3f} - Accuracy: {acc_seuil:.3f} - Recall: {rec_seuil:.3f}\nMatrice de confusion:\n {conf_seuil}")
-        plt.show();
         
+        with open('horz2016_'+location+'.pkl', 'wb') as f:
+            pickle.dump(plt.gcf(), f)        
         
+        plt.show();               
     
     # predictions sur l'année 2016 pour une location
     # nope: là, on predit Rain_J pour toute l'année 2016. ce n'est pas ce que je veux faire
@@ -1525,8 +1527,8 @@ class ProjetAustralieModelisation:
         plt.title(f"Historique de métriques \n{nom_modele}")
         
         # Enregistrer l'objet figure dans un fichier
-        with open('dnn_metrics.pkl', 'wb') as f:
-            pickle.dump(plt.gcf(), f)        
+        #with open('dnn_metrics.pkl', 'wb') as f:
+        #    pickle.dump(plt.gcf(), f)        
         
         plt.show();
         
@@ -1555,8 +1557,8 @@ class ProjetAustralieModelisation:
         plt.title(f"Evolution de la fonction de perte \n{nom_modele}")
 
         # Enregistrer l'objet figure dans un fichier
-        with open('dnn_loss.pkl', 'wb') as f:
-            pickle.dump(plt.gcf(), f)        
+        #with open('dnn_loss.pkl', 'wb') as f:
+        #    pickle.dump(plt.gcf(), f)        
 
         plt.show();
         
@@ -1632,6 +1634,10 @@ class ProjetAustralieModelisation:
             
         plt.title(f'Courbe ROC \n{titre_graphe}')
         plt.legend(loc='lower right')
+        
+        #with open('auc_uluru.pkl', 'wb') as f:
+        #    pickle.dump(plt.gcf(), f)        
+        
         plt.show()
         
         y_pred_seuil = modele.predict_proba(self.X_test)[:,1] >= best_seuil       
