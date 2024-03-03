@@ -5,12 +5,14 @@ from pages import page_introduction, page_conclusion, page_jeu_de_donnees, page_
     page_missing_values, page_new_features
 
 from backend.streamlit_backend_sb import ProjetAustralieSoutenance
+from backend.streamlit_backend_section_1a3 import ProjetAustralieSoutenance_1a3
 
 # affichage large
 st.set_page_config(layout="wide")
 
 # chargement des données et instanciation des classes de backend
 pas = ProjetAustralieSoutenance()
+pas_1a3 = ProjetAustralieSoutenance_1a3()
 
 st.title("Prévision météo en Australie")
 
@@ -46,16 +48,16 @@ st.header(page)
 
 # Introduction à la page 1
 if page == pages[0]:
-    page_introduction.app(pas)
+    page_introduction.app(pas_1a3)
 
 elif page == pages[1]:
-    page_jeu_de_donnees.app(pas)
+    page_jeu_de_donnees.app(pas_1a3)
 
 elif page == pages[2]:
-    page_missing_values.app(pas)
+    page_missing_values.app(pas_1a3)
 
 elif page == pages[3]:
-    page_preprocessing_feature_engineering.app(pas)
+    page_preprocessing_feature_engineering.app(pas_1a3)
 
 elif page == pages[4]:
     page_new_features.app(pas)
