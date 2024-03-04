@@ -57,7 +57,6 @@ def app(pas):
         reloaded_figure = pickle.load(f)
     st.pyplot(reloaded_figure)
     """
-
     st.image('img/horz2016_Adelaide_micro.png', use_column_width=True)
     """
     with open('img/horz2016_Adelaide_micro.pkl', 'rb') as f:
