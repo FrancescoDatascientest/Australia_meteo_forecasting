@@ -2,7 +2,7 @@
 
 import streamlit as st
 import matplotlib.pyplot as plt
-import pickle
+#import pickle
 
 def app(pas):
 
@@ -34,38 +34,57 @@ def app(pas):
     
     col1, col2 = st.columns(2)
 
+    col1.image('img/auc_australie.png', use_column_width=True)
+    """
     with open('img/auc_australie.pkl', 'rb') as f:
         reloaded_figure = pickle.load(f)
     col1.pyplot(reloaded_figure)
+    """
     
+    col2.image('img/auc_uluru.png', use_column_width=True)
+    """
     with open('img/auc_uluru.pkl', 'rb') as f:
         reloaded_figure = pickle.load(f)
     col2.pyplot(reloaded_figure)
+    """
     
     st.subheader("Prévisions sur une année, uniquement à partir des données du 4 janvier 2016")
     #st.image('img/horizon_pred_darwin.png', use_column_width=True)
 
+    st.image('img/horz2016_Darwin_climat.png', use_column_width=True)
+    """
     with open('img/horz2016_Darwin_climat.pkl', 'rb') as f:
         reloaded_figure = pickle.load(f)
     st.pyplot(reloaded_figure)
+    """
 
+    st.image('img/horz2016_Adelaide_micro.png', use_column_width=True)
+    """
     with open('img/horz2016_Adelaide_micro.pkl', 'rb') as f:
         reloaded_figure = pickle.load(f)
     st.pyplot(reloaded_figure)
+    """
     
     st.subheader("Interprétabilité")   
     # st.image('img/horizon_explicabilite.png', use_column_width=True)
     
     col1, col2 = st.columns(2)
+    
+    col1.image('img/fi_Australie_Rain_J_15.png', use_column_width=True)
+    """
     with open('img/fi_Australie_Rain_J_15.pkl', 'rb') as f:
         reloaded_figure = pickle.load(f)
     col1.pyplot(reloaded_figure)
+    """
     
     #with open('img/fi_Darwin_Rain_J_15.pkl', 'rb') as f:
     #    reloaded_figure = pickle.load(f)
     #col2.pyplot(reloaded_figure)
 
+    col2.image('img/fi_Darwin_Rain_J_100.png', use_column_width=True)
+    """
     with open('img/fi_Darwin_Rain_J_100.pkl', 'rb') as f:
         reloaded_figure = pickle.load(f)
     col2.pyplot(reloaded_figure)
+    """
     

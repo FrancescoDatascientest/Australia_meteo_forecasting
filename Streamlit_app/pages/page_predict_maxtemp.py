@@ -3,7 +3,7 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 import pandas as pd
-import pickle
+#import pickle
 
 def app(pas):
     st.subheader("Décomposition")
@@ -76,6 +76,7 @@ def app(pas):
     st.subheader("Prédictions itératives")
     #st.image('img/maxtemp_mono_futur.png', use_column_width=True)
 
+    """
     st.subheader("Fenêtre de 7 jours")
     with open('img/rnn_iterative_07.pkl', 'rb') as f:
         reloaded_figure = pickle.load(f)
@@ -90,6 +91,19 @@ def app(pas):
     with open('img/rnn_iterative_30.pkl', 'rb') as f:
         reloaded_figure = pickle.load(f)
     st.pyplot(plt.gcf())        
+    """
+    
+    df_rnn2016 = pd.read_csv("data/rnn_pred2016.csv", index_col=0)    
+    df_rnn2016.index = pd.to_datetime(df_rnn2016.index)
+    
+    plt.figure(figsize=(16, 4))
+    plt.plot(df_rnn2016.reel_unscaled, label="Donnees reelles")
+    plt.plot(df_rnn2016.pred_unscaled_07, label="Predictions incrémentales - Fenêtre de 7 jours")
+    plt.plot(df_rnn2016.pred_unscaled_15, label="Predictions incrémentales - Fenêtre de 15 jours")
+    plt.plot(df_rnn2016.pred_unscaled_30, label="Predictions incrémentales - Fenêtre de 30 jours")
+    plt.legend()
+    plt.title("Prediction itérative des températures sur période non vue à l'entraînement")  
+    st.pyplot(plt.gcf())
     
     
 def trace_pred_rnn(df:pd.DataFrame, titre:str):
