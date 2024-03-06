@@ -106,8 +106,9 @@ def app(pas):
          
      </div>""", unsafe_allow_html=True
      )
-    pas.matrice_corr_quyen(pas.df, "Corrélations entre les variables du dataset initial")
-    st.pyplot(plt.gcf())  
+    # pas.matrice_corr_quyen(pas.df, "Corrélations entre les variables du dataset initial")
+    # st.pyplot(plt.gcf()) 
+    st.image('img/Corr_jeu_donnes.png', width=1200)
 
 
 
