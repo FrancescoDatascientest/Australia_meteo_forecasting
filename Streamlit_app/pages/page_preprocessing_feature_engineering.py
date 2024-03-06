@@ -103,7 +103,7 @@ def app(pas):
     
     """, unsafe_allow_html=True)
     
-    #st.image('img/knn_imputer2.png', width=750)
+    st.image('img/Vent_conv.png', width=1200)
  
     
    
