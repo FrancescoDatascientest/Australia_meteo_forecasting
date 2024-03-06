@@ -31,7 +31,7 @@ def app(pas):
     ##
    
     
-    st.image('img/sc_project.jpg', width=768) #, use_column_width=True)
+    st.image('img/sc_project.jpg', width=800) #, use_column_width=True)
     
     
     # l'Australie, c'est grand !
