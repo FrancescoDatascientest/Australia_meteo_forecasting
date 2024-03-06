@@ -29,8 +29,8 @@ class ProjetAustralieSoutenance_1a3:
    
 
     def __init__(self):
-       self.disp_width = 1000
-       self.disp_height = 700
+       self.disp_width = 1200
+       self.disp_height = 800
 
        # donnees originelles
        self.df = pd.read_csv(path_datasets+"weatherAUS.csv")
