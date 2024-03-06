@@ -31,8 +31,9 @@ def app(pas):
     </div>""", unsafe_allow_html=True
     )
     
-    pas.graphe_taux_na_location_feature()
-    st.pyplot(plt.gcf())
+    # pas.graphe_taux_na_location_feature()
+    # st.pyplot(plt.gcf())
+    st.image('img/Distr_nna.png', width=1200)
     
     
     # ajoute valeur manqantes vs temp
