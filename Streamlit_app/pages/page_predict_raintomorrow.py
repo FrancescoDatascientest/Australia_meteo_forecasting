@@ -29,6 +29,7 @@ path_classification = path_data
 data_original = f"{path_data}/data_original_pre_processing_without_location_knn_imputed_{k}.joblib"
 data_scaled = f"{path_data}/data_scaled_pre_processing_without_location_knn_imputed_{k}.joblib"
 
+
 class MachineLearningModels:
     def __init__(self, path_data):
         self.path_classification = path_data
@@ -339,34 +340,12 @@ class ApprocheDeepLearning:
             raison de son temps d'entraînement plus raisonnable et de l'écart moindre entre les échantillons de train 
             et de test.
             
-            '''
-        )
-
-    @staticmethod
-    def show_result_of_final_model():
-        st.markdown(
-            '''
             Nous examinons les courbes d'apprentissage de notre meilleur modèle DNN, caractérisé par 
             - une première couche cachée de 50 neurones avec activation tanh, 
             - une seconde couche cachée de 50 neurones avec activation ReLU, 
             - un entraînement sur 300 époques.
             - un learning rate dynamique via une callback personnalisée, 
             - un batch size de 128, 
-            '''
-        )
-
-        with open(f"{path_classification}/DNN/dnn_loss_1.pkl", 'rb') as f:
-            fig_loss = pickle.load(f)
-        with open(f"{path_classification}/DNN/dnn_metrics_1.pkl", 'rb') as f:
-            fig_metrics = pickle.load(f)
-
-        col1, col2 = st.columns(2)
-        col1.pyplot(fig_loss)
-        col2.pyplot(fig_metrics)
-
-        st.markdown(
-            '''
-            #### Comparaison des performances avec le modèle XGBoost
             '''
         )
         fichier = f"{path_classification}/Comparaison_XGBoost_DNN.xlsx"
@@ -376,7 +355,6 @@ class ApprocheDeepLearning:
 
     def show(self):
         self.show_parametres_tunning()
-        self.show_result_of_final_model()
 
 
 # La fonction principale qui est appellée dans streamlit_app.py pour afficher la page
