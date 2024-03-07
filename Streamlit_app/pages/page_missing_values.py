@@ -3,7 +3,9 @@
 import streamlit as st
 import matplotlib.pyplot as plt
 
+
 def app(pas):
+    
     
     st.markdown(
         """
@@ -33,7 +35,7 @@ def app(pas):
     
     # pas.graphe_taux_na_location_feature()
     # st.pyplot(plt.gcf())
-    st.image('img/Distr_nna.png', width=1200)
+    st.image('img/Distr_nna.png', width=1400)
     
     
     # ajoute valeur manqantes vs temp
