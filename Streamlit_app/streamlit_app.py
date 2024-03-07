@@ -10,6 +10,15 @@ from backend.streamlit_backend_section_1a3 import ProjetAustralieSoutenance_1a3
 # affichage large
 st.set_page_config(layout="wide")
 
+# masque la liste des fichiers du sous-repertoire 'pages'
+no_sidebar_style = """
+    <style>
+        div[data-testid="stSidebarNav"] {display: none;}
+    </style>
+"""
+st.markdown(no_sidebar_style, unsafe_allow_html=True)
+
+
 # chargement des données et instanciation des classes de backend
 pas = ProjetAustralieSoutenance()
 pas_1a3 = ProjetAustralieSoutenance_1a3()
