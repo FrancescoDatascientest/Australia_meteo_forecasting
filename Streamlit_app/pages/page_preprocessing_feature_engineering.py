@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 def app(pas):
-    
+        
     ##Valeurs Extremes
     st.markdown(
         """
@@ -48,7 +48,7 @@ def app(pas):
     Nous avons adopté une approche progressive pour la suppression des lignes contenant des données manquantes. 
     <ul>
             <li>Suppression des lignes avec des données manquantes pour la variable cible (représentant 2.2% de l’ensemble de données).</li>
-            <li>Suppression des lignes avec une forte proportion de données manquantes.</li> 
+            <li>Suppression des lignes avec une forte proportion de données manquantes (représentant 1.2% de l’ensemble de données).</li> 
     </ul> 
         
     </div>""", unsafe_allow_html=True    
