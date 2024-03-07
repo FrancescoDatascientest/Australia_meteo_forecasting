@@ -4,9 +4,9 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
 
-def app(pas):
-    #st.write(pas.df.shape)
     
+def app(pas):
+     
     st.markdown(
         """
        <style>
@@ -108,7 +108,7 @@ def app(pas):
      )
     # pas.matrice_corr_quyen(pas.df, "Corrélations entre les variables du dataset initial")
     # st.pyplot(plt.gcf()) 
-    st.image('img/Corr_jeu_donnes.png', width=1200)
+    st.image('img/Corr_jeu_donnes.png', width=1300)
 
 
 
